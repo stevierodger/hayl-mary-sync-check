@@ -22,12 +22,15 @@ const CATEGORY_MAP = {
   Wine: "Wine",
 }
 
-function slugify(text) {
-  return text
+function slugify(text, recordId) {
+  const base = text
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
+  // Suffix with part of the Airtable record ID so two items with the
+  // same name (e.g. two wines both called the same thing) never collide.
+  return `${base}-${recordId.slice(-6).toLowerCase()}`
 }
 
 async function fetchAllAirtableRecords() {
@@ -116,7 +119,7 @@ async function runSync() {
 
       itemsToWrite.push({
         ...(existingFramerId && { id: existingFramerId }),
-        slug: slugify(name),
+        slug: slugify(name, record.id),
         fieldData: {
           [nameFieldId]: { type: "string", value: name },
           [descriptionFieldId]: { type: "formattedText", value: record.fields.Description || "" },
